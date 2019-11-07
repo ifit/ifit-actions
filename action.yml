@@ -1,0 +1,15 @@
+name: 'PR from test to master'
+description: 'Check if test is behind master, if so create a branch capturing the state of test and open a PR to master from it'
+author: 'iFit'
+inputs:
+  pr-reviewers:
+    description: 'Comma seperated list of github user ids who will review the PR'
+    default: ''
+  pr-team-reviewers:
+    description: 'Comma seperated list of github teams whoe will review the PR'
+    default: ''
+runs:
+  using: 'node12'
+  main: 'lib/pr-to-master.js'
+  with: 
+    repository-name: ${{ github.repository }}
