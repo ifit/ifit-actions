@@ -1,4 +1,4 @@
-import * as request from 'request-promise-native';
+// import * as request from 'request-promise-native';
 import * as core from '@actions/core';
 
 // API Docs: https://developer.github.com/v3
