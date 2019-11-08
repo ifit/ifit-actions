@@ -1,5 +1,8 @@
+import * as _request from 'request';
 import * as request from 'request-promise-native';
 import * as core from '@actions/core';
+
+if (false) console.log(_request);
 
 // API Docs: https://developer.github.com/v3
 // const { GITHUB_API_TOKEN } = process.env;
