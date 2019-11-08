@@ -1,8 +1,7 @@
-import * as _request from 'request';
-import * as request from 'request-promise-native';
 import * as core from '@actions/core';
-
-if (false) console.log(_request);
+import axios, { AxiosRequestConfig } from 'axios';
+// import * as _request from 'request';
+// import * as request from 'request-promise-native';
 
 // API Docs: https://developer.github.com/v3
 // const { GITHUB_API_TOKEN } = process.env;
@@ -14,15 +13,19 @@ const prTeamReviewers = core.getInput('pr-team-reviewers');
 console.log({ GITHUB_API_TOKEN: Boolean(GITHUB_API_TOKEN), repositoryName, prReviewers, prTeamReviewers })
 
 const REPO = `https://api.github.com/repos/ifit/${repositoryName}`;
-const defaults = {
+const axiosBaseConfig: AxiosRequestConfig = {
   headers: {
     'User-Agent': 'bender-ifit',
     Authorization: `Bearer ${GITHUB_API_TOKEN}`
   },
-  json: true,
+  // json: true,
 };
-const GET = (uri, opts?) => request(Object.assign({ method: 'GET', uri }, opts, defaults));
-const POST = (uri, body, opts?) => request(Object.assign({ method: 'POST', uri, body }, opts, defaults));
+// const GET = (uri, opts?) => request(Object.assign({ method: 'GET', uri }, opts, defaults));
+// const POST = (uri, body, opts?) => request(Object.assign({ method: 'POST', uri, body }, opts, defaults));
+const GET = (uri: string, config?: AxiosRequestConfig): Promise<any> => 
+  axios.get(uri, Object.assign({ method: 'GET', uri }, config, axiosBaseConfig));
+const POST = (uri: string, body, config?: AxiosRequestConfig): Promise<any> => 
+  axios.post(uri, body, Object.assign({ method: 'POST', uri, body }, config, axiosBaseConfig));
 
 let getBranchHead;
 {
