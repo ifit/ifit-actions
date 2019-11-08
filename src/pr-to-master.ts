@@ -12,7 +12,7 @@ const prTeamReviewers = core.getInput('pr-team-reviewers');
 
 console.log({ GITHUB_API_TOKEN: Boolean(GITHUB_API_TOKEN), repositoryName, prReviewers, prTeamReviewers })
 
-const REPO = `https://api.github.com/repos/ifit/${repositoryName}`;
+const REPO = `https://api.github.com/repos/${repositoryName}`;
 const axiosBaseConfig: AxiosRequestConfig = {
   headers: {
     'User-Agent': 'bender-ifit',
@@ -22,10 +22,10 @@ const axiosBaseConfig: AxiosRequestConfig = {
 };
 // const GET = (uri, opts?) => request(Object.assign({ method: 'GET', uri }, opts, defaults));
 // const POST = (uri, body, opts?) => request(Object.assign({ method: 'POST', uri, body }, opts, defaults));
-const GET = (uri: string, config?: AxiosRequestConfig): Promise<any> => 
-  axios.get(uri, Object.assign({ method: 'GET', uri }, config, axiosBaseConfig));
-const POST = (uri: string, body, config?: AxiosRequestConfig): Promise<any> => 
-  axios.post(uri, body, Object.assign({ method: 'POST', uri, body }, config, axiosBaseConfig));
+const GET = (url: string, config?: AxiosRequestConfig): Promise<any> => 
+  axios.get(url, Object.assign({ method: 'GET', uri: url }, config, axiosBaseConfig));
+const POST = (url: string, body, config?: AxiosRequestConfig): Promise<any> => 
+  axios.post(url, body, Object.assign({ method: 'POST', uri: url, body }, config, axiosBaseConfig));
 
 let getBranchHead;
 {
