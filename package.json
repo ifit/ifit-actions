@@ -3,7 +3,7 @@
   "repository": "https://github.com/ifit/ifit-actions",
   "private": true,
   "scripts": {
-    "build": "ncc build src/pr-to-master.ts",
+    "build-pr-to-master": "ncc build pr-to-master/pr-to-master.ts -o pr-to-master",
     "test": "dotenv node dist/index.js"
   },
   "dependencies": {

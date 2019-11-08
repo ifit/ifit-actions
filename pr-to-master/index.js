@@ -34,7 +34,7 @@ module.exports =
 /******/ 	// the startup function
 /******/ 	function startup() {
 /******/ 		// Load entry module and return exports
-/******/ 		return __webpack_require__(820);
+/******/ 		return __webpack_require__(79);
 /******/ 	};
 /******/
 /******/ 	// run startup
@@ -647,6 +647,130 @@ module.exports = {
 /***/ (function(module, __unusedexports, __webpack_require__) {
 
 module.exports = __webpack_require__(352);
+
+/***/ }),
+
+/***/ 79:
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const core = __importStar(__webpack_require__(470));
+const axios_1 = __importDefault(__webpack_require__(53));
+function getInput(name) {
+    return core.getInput(name) || process.env[name];
+}
+const GITHUB_API_TOKEN = getInput('github-api-token');
+const repositoryName = getInput('repository-name');
+const prReviewers = getInput('pr-reviewers');
+const prTeamReviewers = getInput('pr-team-reviewers');
+console.log({ GITHUB_API_TOKEN: Boolean(GITHUB_API_TOKEN), repositoryName, prReviewers, prTeamReviewers });
+// API Docs: https://developer.github.com/v3
+const REPO = `https://api.github.com/repos/${repositoryName}`;
+const axiosBaseConfig = {
+    headers: {
+        'User-Agent': 'bender-ifit',
+        Authorization: `Bearer ${GITHUB_API_TOKEN}`
+    }
+};
+const GET = (url, config) => axios_1.default.get(url, Object.assign({}, config, axiosBaseConfig)).then(res => res.data);
+const POST = (url, body, config) => axios_1.default.post(url, body, Object.assign({}, config, axiosBaseConfig)).then(res => res.data);
+// declare `getBranchHead` in main scope but define it in lower scope so `refs` is private to it
+let getBranchHead;
+{
+    let refs; // memoize branch heads
+    getBranchHead = (branch) => __awaiter(this, void 0, void 0, function* () {
+        if (!refs) {
+            refs = yield GET(`${REPO}/git/refs/heads`);
+        }
+        console.log({ refs });
+        return refs.find(ref => ref.ref === `refs/heads/${branch}`).object.sha;
+    });
+}
+function createBranch(name) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const body = {
+            ref: `refs/heads/${name}`,
+            sha: yield getBranchHead('test')
+        };
+        const result = yield POST(`${REPO}/git/refs`, body);
+        return result;
+    });
+}
+function createPR(title, body, head, base) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return POST(`${REPO}/pulls`, {
+            title,
+            body,
+            head,
+            base
+        });
+    });
+}
+function requestReview(pullNumber) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return POST(`${REPO}/pulls/${pullNumber}/requested_reviewers`, {
+            team_reviewers: (prTeamReviewers || "").split(','),
+            reviewers: (prReviewers || "").split(','),
+        });
+    });
+}
+function noDiff() {
+    return __awaiter(this, void 0, void 0, function* () {
+        const test = yield getBranchHead("test");
+        const master = yield getBranchHead("master");
+        return test === master;
+    });
+}
+function createAutoPR() {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (yield noDiff()) {
+            console.log("test and master are identical so no PR will be created");
+            return;
+        }
+        const d = new Date();
+        const branchName = "test2master-" + d.toISOString().substr(0, 10);
+        yield createBranch(branchName);
+        console.log(`branch created: ${branchName}`);
+        const prTitle = 'Auto PR ' + branchName.replace('-', ' ');
+        const prBody = `
+    Make sure all these commits are ready to be merged into master.  
+    Feel free to request one or more reviews if you aren't sure.  
+    If you _are_ sure then approve and merge.
+  `;
+        const pr = yield createPR(prTitle, prBody, branchName, 'master');
+        console.log(`PR created: ${prTitle}`);
+        yield requestReview(pr.number);
+        console.log(`review requested`);
+        return 'success';
+    });
+}
+createAutoPR()
+    .then(console.log)
+    .catch((err) => {
+    console.error(err);
+    process.exit(1);
+});
+
 
 /***/ }),
 
@@ -3147,130 +3271,6 @@ module.exports = function isBuffer (obj) {
   return obj != null && obj.constructor != null &&
     typeof obj.constructor.isBuffer === 'function' && obj.constructor.isBuffer(obj)
 }
-
-
-/***/ }),
-
-/***/ 820:
-/***/ (function(__unusedmodule, exports, __webpack_require__) {
-
-"use strict";
-
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const core = __importStar(__webpack_require__(470));
-const axios_1 = __importDefault(__webpack_require__(53));
-function getInput(name) {
-    return core.getInput(name) || process.env[name];
-}
-const GITHUB_API_TOKEN = getInput('github-api-token');
-const repositoryName = getInput('repository-name');
-const prReviewers = getInput('pr-reviewers');
-const prTeamReviewers = getInput('pr-team-reviewers');
-console.log({ GITHUB_API_TOKEN: Boolean(GITHUB_API_TOKEN), repositoryName, prReviewers, prTeamReviewers });
-// API Docs: https://developer.github.com/v3
-const REPO = `https://api.github.com/repos/${repositoryName}`;
-const axiosBaseConfig = {
-    headers: {
-        'User-Agent': 'bender-ifit',
-        Authorization: `Bearer ${GITHUB_API_TOKEN}`
-    }
-};
-const GET = (url, config) => axios_1.default.get(url, Object.assign({}, config, axiosBaseConfig)).then(res => res.data);
-const POST = (url, body, config) => axios_1.default.post(url, body, Object.assign({}, config, axiosBaseConfig)).then(res => res.data);
-// declare `getBranchHead` in main scope but define it in lower scope so `refs` is private to it
-let getBranchHead;
-{
-    let refs; // memoize branch heads
-    getBranchHead = (branch) => __awaiter(this, void 0, void 0, function* () {
-        if (!refs) {
-            refs = yield GET(`${REPO}/git/refs/heads`);
-        }
-        console.log({ refs });
-        return refs.find(ref => ref.ref === `refs/heads/${branch}`).object.sha;
-    });
-}
-function createBranch(name) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const body = {
-            ref: `refs/heads/${name}`,
-            sha: yield getBranchHead('test')
-        };
-        const result = yield POST(`${REPO}/git/refs`, body);
-        return result;
-    });
-}
-function createPR(title, body, head, base) {
-    return __awaiter(this, void 0, void 0, function* () {
-        return POST(`${REPO}/pulls`, {
-            title,
-            body,
-            head,
-            base
-        });
-    });
-}
-function requestReview(pullNumber) {
-    return __awaiter(this, void 0, void 0, function* () {
-        return POST(`${REPO}/pulls/${pullNumber}/requested_reviewers`, {
-            team_reviewers: (prTeamReviewers || "").split(','),
-            reviewers: (prReviewers || "").split(','),
-        });
-    });
-}
-function noDiff() {
-    return __awaiter(this, void 0, void 0, function* () {
-        const test = yield getBranchHead("test");
-        const master = yield getBranchHead("master");
-        return test === master;
-    });
-}
-function createAutoPR() {
-    return __awaiter(this, void 0, void 0, function* () {
-        if (yield noDiff()) {
-            console.log("test and master are identical so no PR will be created");
-            return;
-        }
-        const d = new Date();
-        const branchName = "test2master-" + d.toISOString().substr(0, 10);
-        yield createBranch(branchName);
-        console.log(`branch created: ${branchName}`);
-        const prTitle = 'Auto PR ' + branchName.replace('-', ' ');
-        const prBody = `
-    Make sure all these commits are ready to be merged into master.  
-    Feel free to request one or more reviews if you aren't sure.  
-    If you _are_ sure then approve and merge.
-  `;
-        const pr = yield createPR(prTitle, prBody, branchName, 'master');
-        console.log(`PR created: ${prTitle}`);
-        yield requestReview(pr.number);
-        console.log(`review requested`);
-        return 'success';
-    });
-}
-createAutoPR()
-    .then(console.log)
-    .catch((err) => {
-    console.error(err);
-    process.exit(1);
-});
 
 
 /***/ }),
