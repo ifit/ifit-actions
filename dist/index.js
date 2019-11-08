@@ -3177,33 +3177,33 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const core = __importStar(__webpack_require__(470));
 const axios_1 = __importDefault(__webpack_require__(53));
-// import * as _request from 'request';
-// import * as request from 'request-promise-native';
-// API Docs: https://developer.github.com/v3
-// const { GITHUB_API_TOKEN } = process.env;
-const GITHUB_API_TOKEN = core.getInput('github-api-token');
-const repositoryName = core.getInput('repository-name');
-const prReviewers = core.getInput('pr-reviewers');
-const prTeamReviewers = core.getInput('pr-team-reviewers');
+function getInput(name) {
+    return core.getInput(name) || process.env[name];
+}
+const GITHUB_API_TOKEN = getInput('github-api-token');
+const repositoryName = getInput('repository-name');
+const prReviewers = getInput('pr-reviewers');
+const prTeamReviewers = getInput('pr-team-reviewers');
 console.log({ GITHUB_API_TOKEN: Boolean(GITHUB_API_TOKEN), repositoryName, prReviewers, prTeamReviewers });
+// API Docs: https://developer.github.com/v3
 const REPO = `https://api.github.com/repos/${repositoryName}`;
 const axiosBaseConfig = {
     headers: {
         'User-Agent': 'bender-ifit',
         Authorization: `Bearer ${GITHUB_API_TOKEN}`
-    },
+    }
 };
-// const GET = (uri, opts?) => request(Object.assign({ method: 'GET', uri }, opts, defaults));
-// const POST = (uri, body, opts?) => request(Object.assign({ method: 'POST', uri, body }, opts, defaults));
-const GET = (url, config) => axios_1.default.get(url, Object.assign({ method: 'GET', uri: url }, config, axiosBaseConfig));
-const POST = (url, body, config) => axios_1.default.post(url, body, Object.assign({ method: 'POST', uri: url, body }, config, axiosBaseConfig));
+const GET = (url, config) => axios_1.default.get(url, Object.assign({}, config, axiosBaseConfig)).then(res => res.data);
+const POST = (url, body, config) => axios_1.default.post(url, body, Object.assign({}, config, axiosBaseConfig)).then(res => res.data);
+// declare `getBranchHead` in main scope but define it in lower scope so `refs` is private to it
 let getBranchHead;
 {
-    let refs;
+    let refs; // memoize branch heads
     getBranchHead = (branch) => __awaiter(this, void 0, void 0, function* () {
         if (!refs) {
             refs = yield GET(`${REPO}/git/refs/heads`);
         }
+        console.log({ refs });
         return refs.find(ref => ref.ref === `refs/heads/${branch}`).object.sha;
     });
 }
