@@ -345,10 +345,10 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-// import * as request from 'request-promise-native';
 const core = __importStar(__webpack_require__(470));
 // API Docs: https://developer.github.com/v3
-const { GITHUB_API_TOKEN } = process.env;
+// const { GITHUB_API_TOKEN } = process.env;
+const GITHUB_API_TOKEN = core.getInput('github-api-token');
 const repositoryName = core.getInput('repository-name');
 const prReviewers = core.getInput('pr-reviewers');
 const prTeamReviewers = core.getInput('pr-team-reviewers');

@@ -1,14 +1,14 @@
-// import * as request from 'request-promise-native';
+import * as request from 'request-promise-native';
 import * as core from '@actions/core';
 
 // API Docs: https://developer.github.com/v3
-const { GITHUB_API_TOKEN } = process.env;
-
+// const { GITHUB_API_TOKEN } = process.env;
+const GITHUB_API_TOKEN = core.getInput('github-api-token');
 const repositoryName = core.getInput('repository-name');
 const prReviewers = core.getInput('pr-reviewers');
 const prTeamReviewers = core.getInput('pr-team-reviewers');
 
-console.log({ GITHUB_API_TOKEN: Boolean(GITHUB_API_TOKEN), repositoryName, prReviewers, prTeamReviewers})
+console.log({ GITHUB_API_TOKEN: Boolean(GITHUB_API_TOKEN), repositoryName, prReviewers, prTeamReviewers })
 
 // const REPO = `https://api.github.com/repos/ifit/${repositoryName}`;
 // const defaults = {
