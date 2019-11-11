@@ -2,9 +2,9 @@
   "name": "ifit-actions",
   "repository": "https://github.com/ifit/ifit-actions",
   "private": true,
-  "scripts": {
+  "scripts": {    
     "build-pr-to-master": "ncc build pr-to-master/pr-to-master.ts -o pr-to-master",
-    "test": "dotenv node dist/index.js"
+    "test-pr-to-master": "dotenv node pr-to-master/index.js"
   },
   "dependencies": {
     "@actions/core": "^1.2.0",
