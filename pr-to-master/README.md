@@ -24,8 +24,10 @@ To keep things simple, just pass `${{ github.repository }}` from your workflow.
 
 ## Example usage
 
+```
 uses: ifit/ifit-actions/pr-to-master@master
 with:
   github-api-token: ${{ secrets.GITHUB_API_TOKEN }}
   repository-name: ${{ github.repository }}
   pr-team-reviewers: 'data-migration-pull-assigner-2'
+```
