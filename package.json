@@ -7,7 +7,7 @@
     "test-pr-to-master": "dotenv node pr-to-master/index.js"
   },
   "dependencies": {
-    "@actions/core": "^1.2.0",
+    "@actions/core": "^1.2.6",
     "axios": "^0.21.1"
   },
   "devDependencies": {
