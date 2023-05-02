@@ -22,6 +22,14 @@ To keep things simple, just pass `${{ github.repository }}` from your workflow.
 
 **Optional** Comma separated list of github team names that will be tagged as reviewers
 
+### `from-branch`
+
+**Optional** The base branch that a new release branch will be cut from
+
+### `to-branch`
+
+**Optional** The target branch that the PR will aim to merge into
+
 ## Example usage
 
 ```
@@ -30,4 +38,6 @@ with:
   github-api-token: ${{ secrets.GITHUB_API_TOKEN }}
   repository-name: ${{ github.repository }}
   pr-team-reviewers: 'data-migration-pull-assigner-2'
+  from-branch: 'test'
+  to-branch: 'master'
 ```

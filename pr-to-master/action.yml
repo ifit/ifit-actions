@@ -12,6 +12,12 @@ inputs:
   pr-team-reviewers:
     description: 'Comma seperated list of github teams who will review the PR'
     default: ''
+  from-branch:
+    description: 'The base branch that a new release branch will be cut from'
+    default: 'test'
+  to-branch:
+    description: 'The target branch that the PR will aim to merge into'
+    default: 'master'
 runs:
   using: 'node12'
   main: 'index.js'

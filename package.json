@@ -2,18 +2,18 @@
   "name": "ifit-actions",
   "repository": "https://github.com/ifit/ifit-actions",
   "private": true,
-  "scripts": {    
+  "scripts": {
     "build-pr-to-master": "ncc build pr-to-master/pr-to-master.ts -o pr-to-master",
     "test-pr-to-master": "dotenv node pr-to-master/index.js"
   },
   "dependencies": {
-    "@actions/core": "^1.2.6",
-    "axios": "^0.21.1"
+    "@actions/core": "^1.10.0",
+    "axios": "^0.27.2"
   },
   "devDependencies": {
-    "@types/node": "^12.12.6",
-    "@zeit/ncc": "^0.20.5",
-    "dotenv": "^8.2.0",
-    "dotenv-cli": "^3.0.0"
+    "@types/node": "12.12.6",
+    "@zeit/ncc": "^0.22.3",
+    "dotenv": "^16.0.3",
+    "dotenv-cli": "^7.2.1"
   }
 }
