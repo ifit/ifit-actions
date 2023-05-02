@@ -63,8 +63,8 @@ async function requestReview(pullNumber) {
   return POST(
     `${REPO}/pulls/${pullNumber}/requested_reviewers`,
     {
-      team_reviewers: (prTeamReviewers || "").split(',') || undefined,
-      reviewers: (prReviewers || "").split(',') || undefined,
+      team_reviewers: prTeamReviewers ? prTeamReviewers.split(',') : [],
+      reviewers: prReviewers ? prReviewers.split(',') : []
     }
   );
 }

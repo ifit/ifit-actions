@@ -850,8 +850,8 @@ function createPR(title, body, head, base) {
 function requestReview(pullNumber) {
     return __awaiter(this, void 0, void 0, function* () {
         return POST(`${REPO}/pulls/${pullNumber}/requested_reviewers`, {
-            team_reviewers: (prTeamReviewers || "").split(',') || undefined,
-            reviewers: (prReviewers || "").split(',') || undefined,
+            team_reviewers: prTeamReviewers ? prTeamReviewers.split(',') : [],
+            reviewers: prReviewers ? prReviewers.split(',') : []
         });
     });
 }
