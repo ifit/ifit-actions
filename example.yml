@@ -4,18 +4,19 @@ on:
   workflow_dispatch:
   schedule:
   - cron: '0 7 * * MON' # 1am UTC on monday
-  
+
 jobs:
   create_pr:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
-    - uses: actions/setup-node@v1
+    - uses: actions/setup-node@v3
       with:
-        node-version: '10.x'
+        node-version: '14.x'
     - uses: ifit/ifit-actions/pr-to-master@master
       with:
         github-api-token: ${{ secrets.GITHUB_API_TOKEN }}
         repository-name: ${{ github.repository }}
         pr-team-reviewers: 'data-migration-pull-assigner-2'
-    
+        from-branch: 'test'
+        to-branch: 'master'
