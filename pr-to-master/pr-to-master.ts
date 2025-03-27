@@ -15,10 +15,12 @@ console.log({ GITHUB_API_TOKEN: Boolean(GITHUB_API_TOKEN), repositoryName, prRev
 
 // API Docs: https://developer.github.com/v3
 const REPO = `https://api.github.com/repos/${repositoryName}`;
+const JIRA_BASE_URL = 'https://ifitdev.atlassian.net/browse/';
 const axiosBaseConfig: AxiosRequestConfig = {
   headers: {
     'User-Agent': 'bender-ifit',
-    Authorization: `Bearer ${GITHUB_API_TOKEN}`
+    Authorization: `Bearer ${GITHUB_API_TOKEN}`,
+    Accept: 'application/vnd.github.v3+json'
   }
 };
 
@@ -38,6 +40,43 @@ let getBranchHead;
     }
     console.log({refs})
     return refs.find(ref => ref.ref === `refs/heads/${branch}`).object.sha;
+  }
+}
+
+function extractJiraTickets(commitMessages: string[]): string[] {
+  const jiraTicketRegex = /([A-Z]+-\d+)/g;
+  const tickets = new Set<string>();
+  
+  commitMessages.forEach(message => {
+    const matches = message.match(jiraTicketRegex);
+    if (matches) {
+      matches.forEach(ticket => tickets.add(ticket));
+    }
+  });
+  
+  return Array.from(tickets);
+}
+
+function formatJiraLinks(tickets: string[]): string {
+  if (tickets.length === 0) return '';
+  
+  const links = tickets.map(ticket => 
+    `[${ticket}](${JIRA_BASE_URL}${ticket})`
+  );
+  
+  return `
+## Related Jira Tickets
+${links.join(' | ')}
+`;
+}
+
+async function getCommitsForBranch(branch: string): Promise<string[]> {
+  try {
+    const commits = await GET(`${REPO}/commits?sha=${branch}`);
+    return commits.map(commit => commit.commit.message);
+  } catch (error) {
+    console.error(`Error getting commits for ${branch}:`, error);
+    return [];
   }
 }
 
@@ -84,14 +123,29 @@ async function createAutoPR() {
   const branchName = `${fromBranch}2${toBranch}-${ d.toISOString().substr(0, 10) }`;
   await createBranch(branchName, fromBranch);
   console.log(`branch created: ${branchName}`)
+  
+  // Get commit messages and extract Jira tickets
+  console.log(`Getting commits for ${fromBranch}...`);
+  const commitMessages = await getCommitsForBranch(fromBranch);
+  console.log(`commit message:\n - ${commitMessages.join('\n - ')}`)
+  const jiraTickets = extractJiraTickets(commitMessages);
+  const jiraLinksSection = formatJiraLinks(jiraTickets);
+  
   const prTitle = 'Auto PR ' + branchName.replace('-', ' ');
   const prBody = `
-    Make sure all these commits are ready to be merged into ${toBranch}.
-    Feel free to request one or more reviews if you aren't sure.
-    If you _are_ sure then approve and merge.
+Make sure all these commits are ready to be merged into ${toBranch}.
+Feel free to request one or more reviews if you aren't sure.
+If you are sure then approve and merge.
+
+Tickets include in this release:
+${jiraLinksSection}
   `;
+  
   const pr = await createPR(prTitle, prBody, branchName, toBranch);
   console.log(`PR created: ${prTitle}`)
+  if (jiraTickets.length > 0) {
+    console.log(`Added ${jiraTickets.length} Jira ticket links to PR description`);
+  }
   await requestReview(pr.number);
   console.log(`review requested`)
   return 'success';
