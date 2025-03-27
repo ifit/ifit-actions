@@ -66,16 +66,26 @@ function formatJiraLinks(tickets: string[]): string {
   
   return `
 ## Related Jira Tickets
-${links.join(' | ')}
+- ${links.join('\n - ')}
 `;
 }
 
-async function getCommitsForBranch(branch: string): Promise<string[]> {
+async function getCommitsForPR(fromBranch: string, toBranch: string): Promise<string[]> {
   try {
-    const commits = await GET(`${REPO}/commits?sha=${branch}`);
-    return commits.map(commit => commit.commit.message);
+    // GitHub's compare API gives us commits that are in fromBranch but not in toBranch
+    // The format is BASE...HEAD where BASE is the target branch and HEAD is the source branch
+    console.log(`Comparing ${toBranch}...${fromBranch}`);
+    const comparison = await GET(`${REPO}/compare/${toBranch}...${fromBranch}`);
+    
+    if (!comparison.commits || comparison.commits.length === 0) {
+      console.log('No unique commits found in the comparison');
+      return [];
+    }
+    
+    console.log(`Found ${comparison.commits.length} unique commits`);
+    return comparison.commits.map(commit => commit.commit.message);
   } catch (error) {
-    console.error(`Error getting commits for ${branch}:`, error);
+    console.error(`Error getting PR commits:`, error);
     return [];
   }
 }
@@ -125,9 +135,8 @@ async function createAutoPR() {
   console.log(`branch created: ${branchName}`)
   
   // Get commit messages and extract Jira tickets
-  console.log(`Getting commits for ${fromBranch}...`);
-  const commitMessages = await getCommitsForBranch(fromBranch);
-  console.log(`commit message:\n - ${commitMessages.join('\n - ')}`)
+  const commitMessages = await getCommitsForPR(fromBranch, toBranch);
+  console.log(`commit messages:\n - ${commitMessages.join('\n - ')}`)
   const jiraTickets = extractJiraTickets(commitMessages);
   const jiraLinksSection = formatJiraLinks(jiraTickets);
   
@@ -137,7 +146,6 @@ Make sure all these commits are ready to be merged into ${toBranch}.
 Feel free to request one or more reviews if you aren't sure.
 If you are sure then approve and merge.
 
-Tickets include in this release:
 ${jiraLinksSection}
   `;
   

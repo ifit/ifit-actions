@@ -7764,17 +7764,25 @@ function formatJiraLinks(tickets) {
     const links = tickets.map(ticket => `[${ticket}](${JIRA_BASE_URL}${ticket})`);
     return `
 ## Related Jira Tickets
-${links.join(' | ')}
+- ${links.join('\n - ')}
 `;
 }
-function getCommitsForBranch(branch) {
+function getCommitsForPR(fromBranch, toBranch) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const commits = yield GET(`${REPO}/commits?sha=${branch}`);
-            return commits.map(commit => commit.commit.message);
+            // GitHub's compare API gives us commits that are in fromBranch but not in toBranch
+            // The format is BASE...HEAD where BASE is the target branch and HEAD is the source branch
+            console.log(`Comparing ${toBranch}...${fromBranch}`);
+            const comparison = yield GET(`${REPO}/compare/${toBranch}...${fromBranch}`);
+            if (!comparison.commits || comparison.commits.length === 0) {
+                console.log('No unique commits found in the comparison');
+                return [];
+            }
+            console.log(`Found ${comparison.commits.length} unique commits`);
+            return comparison.commits.map(commit => commit.commit.message);
         }
         catch (error) {
-            console.error(`Error getting commits for ${branch}:`, error);
+            console.error(`Error getting PR commits:`, error);
             return [];
         }
     });
@@ -7825,9 +7833,8 @@ function createAutoPR() {
         yield createBranch(branchName, fromBranch);
         console.log(`branch created: ${branchName}`);
         // Get commit messages and extract Jira tickets
-        console.log(`Getting commits for ${fromBranch}...`);
-        const commitMessages = yield getCommitsForBranch(fromBranch);
-        console.log(`commit message:\n - ${commitMessages.join('\n - ')}`);
+        const commitMessages = yield getCommitsForPR(fromBranch, toBranch);
+        console.log(`commit messages:\n - ${commitMessages.join('\n - ')}`);
         const jiraTickets = extractJiraTickets(commitMessages);
         const jiraLinksSection = formatJiraLinks(jiraTickets);
         const prTitle = 'Auto PR ' + branchName.replace('-', ' ');
@@ -7836,7 +7843,6 @@ Make sure all these commits are ready to be merged into ${toBranch}.
 Feel free to request one or more reviews if you aren't sure.
 If you are sure then approve and merge.
 
-Tickets include in this release:
 ${jiraLinksSection}
   `;
         const pr = yield createPR(prTitle, prBody, branchName, toBranch);
