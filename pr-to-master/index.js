@@ -869,7 +869,7 @@ function createAutoPR() {
             return;
         }
         const d = new Date();
-        const branchName = `${fromBranch}2${toBranch}-${d.toISOString().substr(0, 10)}`;
+        const branchName = `${fromBranch}2${toBranch}-${d.getTime().toString(16)}-${d.toISOString().substr(0, 10)}`;
         yield createBranch(branchName, fromBranch);
         console.log(`branch created: ${branchName}`);
         const prTitle = 'Auto PR ' + branchName.replace('-', ' ');
